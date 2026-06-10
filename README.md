@@ -59,11 +59,32 @@ Manage/cancel via **Manage billing** (Stripe Billing Portal) in the studio heade
 - `/` — landing page (hero, how-it-works, pricing → Stripe Checkout links)
 - `/login` — Supabase email/password sign-in & sign-up
 - `/studio` — gated generator: brief in, streamed proposal out, copy-as-markdown
-- `POST /api/generate` — streams the proposal (Claude Sonnet); enforces an active subscription
-- `GET /api/checkout?plan=` — starts a Stripe subscription Checkout (7-day trial), requires auth
-- `GET /api/portal` — opens the Stripe Billing Portal for the signed-in customer
-- `POST /api/webhooks/stripe` — records subscription state into Supabase
-- prices are defined inline in `lib/plans.ts`, no Stripe dashboard product setup
+- `/studio/proposals` — history: every draft saved, statuses (draft/sent/won/lost) + deal value
+- `/studio/clients` — reusable client profiles (Studio+), loadable into the generator
+- `/studio/voice` — brand voice training (Agency): description + writing sample shape every draft
+- `/studio/analytics` — win-rate analytics (Agency): win rate, value won, monthly trend
+- `/studio/team` — 5 team seats (Agency): invite by email, access on sign-in, no email infra needed
+- `POST /api/generate` — streams the proposal; enforces subscription + Solo's 30/mo limit; saves to history
+- `PATCH/DELETE /api/proposals/[id]` — status/value updates from the UI
+- `GET /api/checkout?plan=` / `GET /api/portal` / `POST /api/webhooks/stripe` — Stripe lifecycle
+- prices in `lib/plans.ts`; per-plan features in `lib/entitlements.ts`
+
+## Plan differentiation (enforced server-side)
+
+| | Solo $29 | Studio $79 | Agency $199 |
+| --- | --- | --- | --- |
+| Proposals/month | 30 (atomic counter) | Unlimited | Unlimited |
+| Pricing-table generator | — | ✓ | ✓ |
+| Client profiles | — | ✓ | ✓ |
+| Brand voice | — | — | ✓ |
+| Win-rate analytics | — | — | ✓ |
+| Team seats | — | — | 5 |
+| AI model | Sonnet 4.6 | Sonnet 4.6 | **Opus 4.8** |
+
+Locked features stay visible in the studio as dashed-border teasers with upgrade
+CTAs. Effective plan resolution (own subscription, or a seat on a team whose
+owner has Agency) lives in `public.resolve_access()`; tenancy is enforced by
+RLS on every table (see `supabase/migrations/`).
 
 ## The math to $1M/month
 

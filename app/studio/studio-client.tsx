@@ -2,30 +2,67 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Document } from "./document";
+import { LockedField } from "./locked";
+import { PricingItems, type PricingItemDraft } from "./pricing-items";
+import { UsageMeter } from "./usage-meter";
+import { createClientProfile } from "./clients/actions";
 
 const TONES = ["Confident & warm", "Formal & precise", "Friendly & casual", "Bold & direct"];
 
-export function StudioClient({
-  authed = false,
-  email,
-  plan,
-}: {
-  authed?: boolean;
-  email?: string;
+export interface ClientProfile {
+  id: string;
+  name: string;
+  business_context: string | null;
+  default_budget: string | null;
+  default_tone: string | null;
+  notes: string | null;
+}
+
+interface StudioClientProps {
+  demo?: boolean;
   plan?: string;
-}) {
+  usage?: { used: number; limit: number } | null;
+  profiles?: ClientProfile[];
+  voiceName?: string | null;
+  hasVoice?: boolean;
+  canPricingTables?: boolean;
+  canClientProfiles?: boolean;
+  canBrandVoice?: boolean;
+}
+
+export function StudioClient({
+  demo = false,
+  usage: initialUsage = null,
+  profiles = [],
+  voiceName = null,
+  hasVoice = false,
+  canPricingTables = false,
+  canClientProfiles = false,
+  canBrandVoice = false,
+}: StudioClientProps) {
   const [clientName, setClientName] = useState("");
   const [yourBusiness, setYourBusiness] = useState("");
   const [projectNotes, setProjectNotes] = useState("");
   const [budget, setBudget] = useState("");
   const [tone, setTone] = useState(TONES[0]);
+  const [profileId, setProfileId] = useState("");
+
+  const [pricingExpanded, setPricingExpanded] = useState(false);
+  const [pricingItems, setPricingItems] = useState<PricingItemDraft[]>([]);
 
   const [draft, setDraft] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [welcome, setWelcome] = useState(false);
+  const [usage, setUsage] = useState(initialUsage);
+  const [proposalId, setProposalId] = useState<string | null>(null);
+  const [markedSent, setMarkedSent] = useState(false);
+  const [savedProfile, setSavedProfile] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
+
+  const blocked = usage !== null && usage.used >= usage.limit;
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("welcome")) setWelcome(true);
@@ -37,23 +74,59 @@ export function StudioClient({
     }
   }, [draft, streaming]);
 
+  function loadProfile(id: string) {
+    setProfileId(id);
+    const p = profiles.find((x) => x.id === id);
+    if (!p) return;
+    setClientName(p.name);
+    if (p.default_budget) setBudget(p.default_budget);
+    if (p.default_tone && TONES.includes(p.default_tone)) setTone(p.default_tone);
+  }
+
   async function generate(e: React.FormEvent) {
     e.preventDefault();
     setStreaming(true);
     setError("");
     setDraft("");
     setCopied(false);
+    setProposalId(null);
+    setMarkedSent(false);
+    setSavedProfile(false);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientName, yourBusiness, projectNotes, budget, tone }),
+        body: JSON.stringify({
+          clientName,
+          yourBusiness,
+          projectNotes,
+          budget,
+          tone,
+          ...(profileId ? { clientProfileId: profileId } : {}),
+          ...(pricingItems.length > 0
+            ? { pricingItems: pricingItems.filter((p) => p.item.trim() && p.price.trim()) }
+            : {}),
+        }),
       });
       if (res.status === 401) throw new Error("Your session expired. Please sign in again.");
-      if (res.status === 402) throw new Error("Your subscription is inactive. Renew it to keep drafting.");
+      if (res.status === 402)
+        throw new Error("Your subscription is inactive. Renew it to keep drafting.");
+      if (res.status === 429) {
+        if (usage) setUsage({ ...usage, used: usage.limit });
+        throw new Error("You've reached your monthly limit. Upgrade to Studio for unlimited drafting.");
+      }
       if (!res.ok || !res.body) {
         throw new Error(`Generation failed (${res.status})`);
       }
+
+      const pid = res.headers.get("X-Proposal-Id");
+      if (pid) setProposalId(pid);
+      const usedHeader = res.headers.get("X-Usage-Used");
+      const limitHeader = res.headers.get("X-Usage-Limit");
+      if (usedHeader && limitHeader) {
+        setUsage({ used: Number(usedHeader), limit: Number(limitHeader) });
+      }
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       while (true) {
@@ -74,48 +147,36 @@ export function StudioClient({
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function markSent() {
+    if (!proposalId) return;
+    const res = await fetch(`/api/proposals/${proposalId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "sent" }),
+    });
+    if (res.ok) setMarkedSent(true);
+  }
+
+  async function saveAsProfile() {
+    const result = await createClientProfile({
+      name: clientName,
+      defaultBudget: budget,
+      defaultTone: tone,
+      notes: projectNotes.slice(0, 500),
+    });
+    if (result.ok) setSavedProfile(true);
+  }
+
+  const nextReset = (() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth() + 1, 1).toLocaleDateString(undefined, {
+      month: "long",
+      day: "numeric",
+    });
+  })();
+
   return (
-    <main className="flex-1">
-      <header className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="font-display text-2xl font-semibold tracking-tight">
-            Draftly<span className="text-vermillion">.</span>
-          </Link>
-
-          {authed ? (
-            <div className="flex items-center gap-5 text-sm">
-              {plan && (
-                <span className="hidden border border-line px-2.5 py-1 text-xs font-medium tracking-wide text-ink-soft uppercase sm:inline">
-                  {plan} plan
-                </span>
-              )}
-              {email && <span className="hidden text-ink-soft md:inline">{email}</span>}
-              <a
-                href="/api/portal"
-                className="text-ink-soft underline underline-offset-4 hover:text-ink"
-              >
-                Manage billing
-              </a>
-              <form action="/auth/signout" method="post">
-                <button
-                  type="submit"
-                  className="cursor-pointer text-ink-soft underline underline-offset-4 hover:text-ink"
-                >
-                  Sign out
-                </button>
-              </form>
-            </div>
-          ) : (
-            <Link
-              href="/#pricing"
-              className="text-sm text-ink-soft underline underline-offset-4 hover:text-ink"
-            >
-              Upgrade plan
-            </Link>
-          )}
-        </div>
-      </header>
-
+    <>
       {welcome && (
         <div className="border-b border-line bg-moss px-6 py-3 text-center text-sm text-cream">
           Welcome aboard. Your trial is active. Draft your first proposal below. ✳
@@ -130,8 +191,35 @@ export function StudioClient({
             Brief in. Proposal out.
           </h1>
 
+          {usage && <UsageMeter used={usage.used} limit={usage.limit} />}
+
           <label className="mt-7 block">
-            <span className="eyebrow text-ink-soft">Client</span>
+            <span className="flex items-baseline justify-between">
+              <span className="eyebrow text-ink-soft">Client</span>
+              {canClientProfiles && profiles.length > 0 && (
+                <select
+                  value={profileId}
+                  onChange={(e) => loadProfile(e.target.value)}
+                  className="cursor-pointer border border-line bg-paper px-2 py-1 text-xs text-ink-soft outline-none focus:border-ink"
+                >
+                  <option value="">Load saved client…</option>
+                  {profiles.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {!canClientProfiles && !demo && (
+                <a
+                  href="/api/checkout?plan=studio"
+                  className="text-xs text-ink-soft/60 hover:text-ink-soft"
+                  title="Included in Studio"
+                >
+                  Saved clients · Studio <span className="text-vermillion">✳</span>
+                </a>
+              )}
+            </span>
             <input
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
@@ -186,28 +274,103 @@ export function StudioClient({
             </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={streaming}
-            className="mt-7 w-full cursor-pointer border border-ink bg-ink px-6 py-3.5 font-medium text-cream transition-colors hover:bg-vermillion hover:border-vermillion disabled:opacity-60"
-          >
-            {streaming ? "Drafting…" : "Draft my proposal →"}
-          </button>
+          {canPricingTables ? (
+            <PricingItems
+              items={pricingItems}
+              onChange={setPricingItems}
+              expanded={pricingExpanded}
+              onToggle={() => {
+                setPricingExpanded(true);
+                if (pricingItems.length === 0)
+                  setPricingItems([{ item: "", qty: "1", price: "" }]);
+              }}
+            />
+          ) : (
+            !demo && (
+              <LockedField
+                feature="pricingTables"
+                label="Pricing table"
+                note="Itemized pricing tables are included in Studio."
+              />
+            )
+          )}
+
+          {canBrandVoice && (
+            <p className="mt-5 text-xs">
+              {hasVoice ? (
+                <span className="text-moss">
+                  ✳ Brand voice active{voiceName ? ` — "${voiceName}"` : ""}{" "}
+                  <Link href="/studio/voice" className="underline underline-offset-4">
+                    Edit
+                  </Link>
+                </span>
+              ) : (
+                <Link
+                  href="/studio/voice"
+                  className="text-ink-soft underline underline-offset-4 hover:text-ink"
+                >
+                  Train your brand voice →
+                </Link>
+              )}
+            </p>
+          )}
+
+          {blocked ? (
+            <div className="mt-7">
+              <a
+                href="/api/checkout?plan=studio"
+                className="block w-full border border-vermillion bg-vermillion px-6 py-3.5 text-center font-medium text-cream transition-colors hover:bg-vermillion-deep hover:border-vermillion-deep"
+              >
+                Upgrade to Studio for unlimited →
+              </a>
+              <p className="mt-2 text-center text-xs text-ink-soft">
+                Your limit resets on {nextReset}.
+              </p>
+            </div>
+          ) : (
+            <button
+              type="submit"
+              disabled={streaming}
+              className="mt-7 w-full cursor-pointer border border-ink bg-ink px-6 py-3.5 font-medium text-cream transition-colors hover:bg-vermillion hover:border-vermillion disabled:opacity-60"
+            >
+              {streaming ? "Drafting…" : "Draft my proposal →"}
+            </button>
+          )}
           {error && <p className="mt-3 text-sm text-vermillion-deep">{error}</p>}
         </form>
 
         {/* ── Output document ─────────────────────── */}
         <div className="relative">
           <div className="sticky top-8">
-            <div className="flex items-center justify-between pb-3">
+            <div className="flex items-center justify-between gap-3 pb-3">
               <p className="eyebrow text-ink-soft">Your draft</p>
               {draft && !streaming && (
-                <button
-                  onClick={copy}
-                  className="cursor-pointer border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream"
-                >
-                  {copied ? "Copied ✓" : "Copy markdown"}
-                </button>
+                <div className="flex items-center gap-2">
+                  {canClientProfiles && clientName.trim() && (
+                    <button
+                      onClick={saveAsProfile}
+                      disabled={savedProfile}
+                      className="cursor-pointer text-xs text-ink-soft underline underline-offset-4 hover:text-ink disabled:no-underline"
+                    >
+                      {savedProfile ? "Saved ✓" : "Save as client profile"}
+                    </button>
+                  )}
+                  {proposalId && (
+                    <button
+                      onClick={markSent}
+                      disabled={markedSent}
+                      className="cursor-pointer border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream disabled:border-moss disabled:text-moss disabled:hover:bg-transparent"
+                    >
+                      {markedSent ? "Sent ✓" : "Mark as sent"}
+                    </button>
+                  )}
+                  <button
+                    onClick={copy}
+                    className="cursor-pointer border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream"
+                  >
+                    {copied ? "Copied ✓" : "Copy markdown"}
+                  </button>
+                </div>
               )}
             </div>
             <div
@@ -229,77 +392,6 @@ export function StudioClient({
           </div>
         </div>
       </div>
-    </main>
-  );
-}
-
-/** Lightweight markdown-ish renderer: headings, lists, quotes, table rows, paragraphs. */
-function Document({ text, streaming }: { text: string; streaming: boolean }) {
-  const lines = text.split("\n");
-  return (
-    <div className="space-y-1">
-      {lines.map((line, i) => {
-        const isLast = i === lines.length - 1;
-        const caret = streaming && isLast ? <span className="caret text-vermillion">▌</span> : null;
-        const clean = line.replace(/\*\*/g, "");
-
-        if (line.startsWith("# "))
-          return (
-            <h2 key={i} className="pt-2 pb-1 font-display text-2xl font-semibold tracking-tight">
-              {clean.slice(2)} {caret}
-            </h2>
-          );
-        if (line.startsWith("## "))
-          return (
-            <h3 key={i} className="pt-4 pb-1 font-display text-lg font-semibold">
-              {clean.slice(3)} {caret}
-            </h3>
-          );
-        if (line.startsWith("> "))
-          return (
-            <p key={i} className="border-l-2 border-vermillion py-1 pl-3 text-sm text-ink-soft italic">
-              {clean.slice(2)} {caret}
-            </p>
-          );
-        if (/^[-*] /.test(line))
-          return (
-            <p key={i} className="flex gap-2 text-[0.95rem] leading-relaxed">
-              <span className="text-vermillion">✳</span>
-              <span>
-                {clean.slice(2)} {caret}
-              </span>
-            </p>
-          );
-        if (/^\d+\. /.test(line))
-          return (
-            <p key={i} className="pl-1 text-[0.95rem] leading-relaxed">
-              {clean} {caret}
-            </p>
-          );
-        if (line.startsWith("|")) {
-          const isDivider = line.replace(/[|\s:-]/g, "") === "";
-          if (isDivider) return null;
-          return (
-            <p key={i} className="grid grid-cols-2 gap-2 border-b border-line py-1.5 text-sm">
-              {clean
-                .split("|")
-                .filter((c) => c.trim() !== "")
-                .map((cell, j) => (
-                  <span key={j} className={j > 0 ? "text-right font-medium" : ""}>
-                    {cell.trim()}
-                  </span>
-                ))}
-              {caret}
-            </p>
-          );
-        }
-        if (line.trim() === "") return <div key={i} className="h-2">{caret}</div>;
-        return (
-          <p key={i} className="text-[0.95rem] leading-relaxed">
-            {clean} {caret}
-          </p>
-        );
-      })}
-    </div>
+    </>
   );
 }

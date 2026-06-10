@@ -45,6 +45,7 @@ export const PLANS: Plan[] = [
       "5 team seats",
       "Brand voice training",
       "Win-rate analytics",
+      "Our most powerful AI model",
     ],
   },
 ];
