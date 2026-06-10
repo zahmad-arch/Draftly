@@ -1,4 +1,5 @@
 import { streamText } from "ai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 
 export const maxDuration = 60;
 
@@ -90,14 +91,14 @@ Reply "let's go" and you'll have the kickoff document within 24 hours. This quot
 export async function POST(req: Request) {
   const input = (await req.json().catch(() => ({}))) as GenerateRequest;
 
-  const hasGateway =
-    process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || process.env.VERCEL;
-  if (!hasGateway) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     return demoStream(input);
   }
 
+  const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
   const result = streamText({
-    model: "anthropic/claude-sonnet-4-6",
+    model: anthropic("claude-sonnet-4-6"),
     prompt: buildPrompt(input),
   });
 
