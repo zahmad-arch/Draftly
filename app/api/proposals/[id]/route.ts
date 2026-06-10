@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { resolveAccess } from "@/lib/access";
+import { titleFrom } from "@/lib/proposal-blocks";
+import { scrub } from "@/lib/sanitize";
 import { createClient } from "@/lib/supabase/server";
 
 const STATUSES = new Set(["draft", "sent", "won", "lost"]);
@@ -19,6 +21,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     value?: number | null;
     title?: string;
     client_name?: string;
+    content?: string;
   };
 
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -36,6 +39,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
   if (body.title !== undefined) update.title = String(body.title).slice(0, 200);
   if (body.client_name !== undefined) update.client_name = String(body.client_name).slice(0, 200);
+  if (body.content !== undefined) {
+    if (typeof body.content !== "string" || body.content.length > 120_000) {
+      return NextResponse.json({ error: "Invalid content." }, { status: 422 });
+    }
+    const clean = scrub(body.content);
+    update.content = clean;
+    // Keep the display title in sync with the document's first heading.
+    const t = titleFrom(clean);
+    if (t) update.title = t;
+  }
 
   // RLS scopes the update to the caller's account.
   const supabase = await createClient();

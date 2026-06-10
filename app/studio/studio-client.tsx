@@ -1,12 +1,20 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Document } from "./document";
+import type { ProposalEditorHandle, SaveState } from "./editor/proposal-editor";
+import { SaveStatus } from "./editor/save-status";
 import { LockedField } from "./locked";
 import { PricingItems, type PricingItemDraft } from "./pricing-items";
 import { UsageMeter } from "./usage-meter";
 import { createClientProfile } from "./clients/actions";
+
+const ProposalEditor = dynamic(
+  () => import("./editor/proposal-editor").then((m) => m.ProposalEditor),
+  { ssr: false, loading: () => <div className="min-h-48 p-8" /> },
+);
 
 const TONES = ["Confident & warm", "Formal & precise", "Friendly & casual", "Bold & direct"];
 
@@ -60,9 +68,13 @@ export function StudioClient({
   const [proposalId, setProposalId] = useState<string | null>(null);
   const [markedSent, setMarkedSent] = useState(false);
   const [savedProfile, setSavedProfile] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [editHint, setEditHint] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<ProposalEditorHandle>(null);
 
   const blocked = usage !== null && usage.used >= usage.limit;
+  const editing = !streaming && Boolean(proposalId) && draft.length > 0;
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("welcome")) setWelcome(true);
@@ -92,6 +104,10 @@ export function StudioClient({
     setProposalId(null);
     setMarkedSent(false);
     setSavedProfile(false);
+    setSaveState("idle");
+    setEditHint(false);
+    // Prefetch the editor chunk while the model streams, so the swap is instant.
+    void import("./editor/proposal-editor");
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -134,6 +150,10 @@ export function StudioClient({
         if (done) break;
         setDraft((d) => d + decoder.decode(value, { stream: true }));
       }
+      if (pid) {
+        setEditHint(true);
+        setTimeout(() => setEditHint(false), 6000);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -142,19 +162,28 @@ export function StudioClient({
   }
 
   async function copy() {
-    await navigator.clipboard.writeText(draft);
+    const text = editorRef.current?.getText() ?? draft;
+    await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    void editorRef.current?.flush();
   }
 
   async function markSent() {
     if (!proposalId) return;
+    await editorRef.current?.flush();
     const res = await fetch(`/api/proposals/${proposalId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "sent" }),
     });
     if (res.ok) setMarkedSent(true);
+  }
+
+  async function downloadPdf() {
+    if (!proposalId) return;
+    const ok = (await editorRef.current?.flush()) ?? true;
+    if (ok) window.location.assign(`/api/proposals/${proposalId}/pdf`);
   }
 
   async function saveAsProfile() {
@@ -343,7 +372,16 @@ export function StudioClient({
         <div className="relative">
           <div className="sticky top-8">
             <div className="flex items-center justify-between gap-3 pb-3">
-              <p className="eyebrow text-ink-soft">Your draft</p>
+              <div className="flex items-baseline gap-3">
+                {editHint ? (
+                  <p className="eyebrow text-moss transition-opacity duration-500">
+                    ✳︎ Now editable: click anywhere to refine
+                  </p>
+                ) : (
+                  <p className="eyebrow text-ink-soft">Your draft</p>
+                )}
+                {editing && <SaveStatus state={saveState} onRetry={() => void editorRef.current?.flush()} />}
+              </div>
               {draft && !streaming && (
                 <div className="flex items-center gap-2">
                   {canClientProfiles && clientName.trim() && (
@@ -364,12 +402,12 @@ export function StudioClient({
                       >
                         {markedSent ? "Sent ✓" : "Mark as sent"}
                       </button>
-                      <a
-                        href={`/api/proposals/${proposalId}/pdf`}
-                        className="border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream"
+                      <button
+                        onClick={downloadPdf}
+                        className="cursor-pointer border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream"
                       >
                         Download PDF
-                      </a>
+                      </button>
                     </>
                   )}
                   <button
@@ -383,9 +421,18 @@ export function StudioClient({
             </div>
             <div
               ref={outputRef}
-              className="h-[70vh] overflow-y-auto border border-line bg-cream p-8 shadow-[8px_10px_0_0_rgba(27,23,18,0.08)]"
+              className={`h-[70vh] overflow-y-auto border border-line bg-cream shadow-[8px_10px_0_0_rgba(27,23,18,0.08)] ${
+                editing ? "" : "p-8"
+              }`}
             >
-              {draft ? (
+              {editing ? (
+                <ProposalEditor
+                  ref={editorRef}
+                  proposalId={proposalId}
+                  initialText={draft}
+                  onSaveState={setSaveState}
+                />
+              ) : draft ? (
                 <Document text={draft} streaming={streaming} />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center text-center">

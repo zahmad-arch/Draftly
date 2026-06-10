@@ -24,8 +24,25 @@ export function scrub(s: string): string {
     .replace(CONTROL, "")
     .replace(/,\s*,/g, ",") // doubled commas from em-dash replacement
     .replace(/([.:;!?]),\s/g, "$1 ") // ".," artifacts
-    .replace(/ {2,}/g, " ") // collapse space runs (never newlines)
+    // Collapse interior space runs only: line-leading indentation is
+    // meaningful (nested list levels are two spaces per level).
+    .replace(/(?<=\S) {2,}/g, " ")
     .replace(/ +$/gm, ""); // trailing spaces per line
+}
+
+/**
+ * Scrub for inline SEGMENTS of a line (e.g. bold/italic spans): identical to
+ * scrub() but never trims trailing spaces, which are meaningful separators
+ * between adjacent segments.
+ */
+export function scrubInline(s: string): string {
+  return s
+    .replace(EM_DASHES, ", ")
+    .replace(EN_DASHES, "-")
+    .replace(EMOJI, "")
+    .replace(/ /g, " ")
+    .replace(CONTROL, "")
+    .replace(/(?<=\S) {2,}/g, " ");
 }
 
 /** Wraps a text stream so every chunk is scrubbed before reaching the client. */

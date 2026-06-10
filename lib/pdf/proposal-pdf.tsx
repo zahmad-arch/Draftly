@@ -13,7 +13,7 @@ import {
   type Inline,
   type PdfBlock,
 } from "@/lib/proposal-blocks";
-import { scrub } from "@/lib/sanitize";
+import { scrub, scrubInline } from "@/lib/sanitize";
 import { FALLBACK_FAMILIES, ensureFonts, type PdfFamilies } from "./fonts";
 
 const INK = "#1b1712";
@@ -196,11 +196,17 @@ type Styles = ReturnType<typeof makeStyles>;
 function Inlines({ inlines, styles }: { inlines: Inline[]; styles: Styles }) {
   return (
     <>
-      {inlines.map((seg, i) => (
-        <Text key={i} style={seg.bold ? styles.bold : undefined}>
-          {scrub(seg.text)}
-        </Text>
-      ))}
+      {inlines.map((seg, i) => {
+        const style = [
+          ...(seg.bold ? [styles.bold] : []),
+          ...(seg.italic ? [{ fontStyle: "italic" as const }] : []),
+        ];
+        return (
+          <Text key={i} style={style.length > 0 ? style : undefined}>
+            {scrubInline(seg.text)}
+          </Text>
+        );
+      })}
     </>
   );
 }
@@ -231,6 +237,7 @@ function Table({
           ))}
         </View>
       )}
+      {/* body rows below render inline marks via <Inlines> */}
       {bodyRows.map((cells, i) => {
         const first = scrub(inlineText(cells[0] ?? []));
         const isTotal = /^total\b/i.test(first);
@@ -253,7 +260,7 @@ function Table({
                     : [styles.cell, ...(j > 0 ? [styles.cellRight] : [])]
                 }
               >
-                {scrub(inlineText(cell))}
+                <Inlines inlines={cell} styles={styles} />
               </Text>
             ))}
           </View>
@@ -338,29 +345,30 @@ function ProposalPdf({
               );
             case "bullet":
               return (
-                <View key={i} style={styles.bulletRow} wrap={false}>
+                <View
+                  key={i}
+                  style={[styles.bulletRow, { marginLeft: block.level * 12 }]}
+                  wrap={false}
+                >
                   <View style={styles.bulletMarker} />
                   <Text style={styles.bulletText}>
                     <Inlines inlines={block.inlines} styles={styles} />
                   </Text>
                 </View>
               );
-            case "numbered": {
-              const m = scrub(inlineText(block.inlines)).match(/^(\d+)\.\s*(.*)$/);
-              if (!m) {
-                return (
-                  <Text key={i} style={styles.p}>
+            case "numbered":
+              return (
+                <View
+                  key={i}
+                  style={[styles.numberedRow, { marginLeft: block.level * 12 }]}
+                  wrap={false}
+                >
+                  <Text style={styles.numberedNum}>{block.n}.</Text>
+                  <Text style={styles.bulletText}>
                     <Inlines inlines={block.inlines} styles={styles} />
                   </Text>
-                );
-              }
-              return (
-                <View key={i} style={styles.numberedRow} wrap={false}>
-                  <Text style={styles.numberedNum}>{m[1]}.</Text>
-                  <Text style={styles.bulletText}>{m[2]}</Text>
                 </View>
               );
-            }
             case "table":
               return <Table key={i} rows={block.rows} headerRow={block.headerRow} styles={styles} />;
             case "blank":

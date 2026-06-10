@@ -1,6 +1,7 @@
 import { streamText } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { resolveAccess } from "@/lib/access";
+import { titleFrom } from "@/lib/proposal-blocks";
 import { scrub, scrubStream } from "@/lib/sanitize";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -81,12 +82,6 @@ Style rules, non-negotiable:
 - Never use emojis or decorative symbols of any kind.
 - Avoid words and phrases that read as AI-generated: "delve", "leverage", "seamless", "elevate", "unlock", "supercharge", "game-changing", "I hope this finds you well", "in today's fast-paced world". Plain, confident, specific language only.
 - Write like an experienced human professional sending a real document to a real client.`;
-}
-
-/** Pull a display title from the generated markdown's first heading. */
-function titleFrom(text: string): string | null {
-  const m = text.match(/^#\s+(.+)$/m);
-  return m ? m[1].trim().slice(0, 200) : null;
 }
 
 /** Demo-mode fallback: streams a templated proposal so the product works with zero API keys. */
