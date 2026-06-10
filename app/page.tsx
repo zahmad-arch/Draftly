@@ -235,6 +235,12 @@ export default function Home() {
             <span className="font-display font-semibold text-ink">Draftly.</span> Proposals that win
             the work.
           </p>
+          <p className="flex items-center gap-1.5">
+            <span>Made with</span>
+            <span className="text-vermillion" aria-label="love">♥</span>
+            <span>in Canada</span>
+            <span aria-label="Canadian flag">🍁</span>
+          </p>
           <p>© {new Date().getFullYear()} Draftly</p>
         </div>
       </footer>
