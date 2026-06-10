@@ -13,7 +13,7 @@ export const PLANS: Plan[] = [
   {
     id: "solo",
     name: "Solo",
-    priceMonthly: 29,
+    priceMonthly: 10,
     tagline: "For independent freelancers",
     features: [
       "30 proposals a month",
@@ -25,7 +25,7 @@ export const PLANS: Plan[] = [
   {
     id: "studio",
     name: "Studio",
-    priceMonthly: 79,
+    priceMonthly: 49,
     tagline: "For small studios & consultants",
     features: [
       "Unlimited proposals",
@@ -38,7 +38,7 @@ export const PLANS: Plan[] = [
   {
     id: "agency",
     name: "Agency",
-    priceMonthly: 199,
+    priceMonthly: 129,
     tagline: "For teams that pitch weekly",
     features: [
       "Everything in Studio",

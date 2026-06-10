@@ -71,7 +71,7 @@ Manage/cancel via **Manage billing** (Stripe Billing Portal) in the studio heade
 
 ## Plan differentiation (enforced server-side)
 
-| | Solo $29 | Studio $79 | Agency $199 |
+| | Solo $10 | Studio $49 | Agency $129 |
 | --- | --- | --- | --- |
 | Proposals/month | 30 (atomic counter) | Unlimited | Unlimited |
 | Pricing-table generator | — | ✓ | ✓ |
@@ -93,13 +93,13 @@ economics are deliberately simple:
 
 | Plan | Price | Customers needed for $1M/mo |
 | --- | --- | --- |
-| Solo | $29/mo | 34,500 |
-| Studio | $79/mo | 12,700 |
-| Agency | $199/mo | 5,050 |
+| Solo | $10/mo | 100,000 |
+| Studio | $49/mo | 20,400 |
+| Agency | $129/mo | 7,750 |
 
-A realistic blended target: **~8,000 paying customers** at an average of
-~$125/mo (mostly Studio + Agency). For context, the freelance/agency market is
-~80M people globally; you need 0.01% of it.
+A realistic blended target: **~15,000 paying customers** at an average of
+~$65/mo (mostly Studio + Agency). For context, the freelance/agency market is
+~80M people globally; you need 0.02% of it.
 
 ### Milestones that actually matter
 
