@@ -17,7 +17,7 @@ const SITE_URL = "https://draftly.ca";
 const OG_IMAGE = `${SITE_URL}/og-image.png`;
 const TITLE = "Draftly: Proposals that win the work";
 const DESCRIPTION =
-  "Turn rough project notes into client-ready proposals in ninety seconds. Built for freelancers, agencies, and consultants who close.";
+  "Draftly turns messy discovery-call notes into a client-ready proposal in 90 seconds. Scoped, priced, and written in your voice. Built for freelancers and agencies.";
 
 export const metadata: Metadata = {
   title: TITLE,
