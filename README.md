@@ -1,0 +1,2 @@
+# Draftly
+AI proposal builder
