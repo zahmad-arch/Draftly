@@ -1,7 +1,40 @@
 import { streamText } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
+
+const ACTIVE_STATUSES = new Set(["active", "trialing"]);
+
+/**
+ * Server-side subscription gate. The studio UI is already gated, but the API must
+ * enforce it too — otherwise anyone could call this endpoint directly. Returns
+ * null when access is allowed, or a Response to short-circuit. Skipped in demo
+ * mode (no Supabase) so the app still runs with zero config.
+ */
+async function checkAccess(): Promise<Response | null> {
+  if (!isSupabaseConfigured()) return null;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return new Response("Sign in to draft proposals.", { status: 401 });
+  }
+
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!sub || !ACTIVE_STATUSES.has(sub.status)) {
+    return new Response("An active subscription is required.", { status: 402 });
+  }
+  return null;
+}
 
 interface GenerateRequest {
   clientName?: string;
@@ -89,6 +122,9 @@ ${seller}`;
 }
 
 export async function POST(req: Request) {
+  const denied = await checkAccess();
+  if (denied) return denied;
+
   const input = (await req.json().catch(() => ({}))) as GenerateRequest;
 
   if (!process.env.ANTHROPIC_API_KEY) {

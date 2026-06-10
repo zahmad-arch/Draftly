@@ -1,8 +1,10 @@
-"use client";
-
-import { useState } from "react";
 import type { PlanId } from "@/lib/plans";
 
+/**
+ * Plain anchor (not next/link) so Next.js never prefetches it — prefetching a
+ * checkout link would create phantom Stripe sessions. The route handles auth:
+ * unauthenticated visitors are redirected to /login and bounced back to resume.
+ */
 export function CheckoutButton({
   planId,
   highlighted,
@@ -10,46 +12,16 @@ export function CheckoutButton({
   planId: PlanId;
   highlighted?: boolean;
 }) {
-  const [state, setState] = useState<"idle" | "loading" | "error">("idle");
-  const [message, setMessage] = useState("");
-
-  async function checkout() {
-    setState("loading");
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId }),
-      });
-      const data = await res.json();
-      if (res.ok && data.url) {
-        window.location.href = data.url;
-        return;
-      }
-      setMessage(data.error ?? "Checkout is unavailable right now.");
-      setState("error");
-    } catch {
-      setMessage("Checkout is unavailable right now.");
-      setState("error");
-    }
-  }
-
   return (
-    <div className="mt-8">
-      <button
-        onClick={checkout}
-        disabled={state === "loading"}
-        className={`w-full cursor-pointer border px-5 py-3 text-sm font-medium transition-colors disabled:opacity-60 ${
-          highlighted
-            ? "border-vermillion bg-vermillion text-cream hover:bg-vermillion-deep hover:border-vermillion-deep"
-            : "border-ink bg-ink text-cream hover:bg-vermillion hover:border-vermillion"
-        }`}
-      >
-        {state === "loading" ? "Opening checkout…" : "Start free trial"}
-      </button>
-      {state === "error" && (
-        <p className={`mt-2 text-xs ${highlighted ? "text-cream/70" : "text-ink-soft"}`}>{message}</p>
-      )}
-    </div>
+    <a
+      href={`/api/checkout?plan=${planId}`}
+      className={`mt-8 block w-full border px-5 py-3 text-center text-sm font-medium transition-colors ${
+        highlighted
+          ? "border-vermillion bg-vermillion text-cream hover:bg-vermillion-deep hover:border-vermillion-deep"
+          : "border-ink bg-ink text-cream hover:bg-vermillion hover:border-vermillion"
+      }`}
+    >
+      Start free trial
+    </a>
   );
 }
