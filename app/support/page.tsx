@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { EmailButton } from "./email-button";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,8 @@ export const metadata: Metadata = {
 
 export default function SupportPage() {
   const ticketRef = `DRF-${String(Date.now()).slice(-6)}`;
-  const subject = `Support Request #${ticketRef}: [type support subject here]`;
+  // No # symbol in the subject — some browsers misparse %23 as a URL fragment.
+  const subject = `Support Request ${ticketRef}: [type support subject here]`;
   const mailtoHref = `mailto:info@draftly.ca?subject=${encodeURIComponent(subject)}`;
 
   return (
@@ -29,16 +31,11 @@ export default function SupportPage() {
             we&apos;ll get back to you.
           </p>
 
-          <a
-            href={mailtoHref}
-            className="mt-8 block border border-ink bg-ink px-6 py-3.5 text-center font-medium text-cream transition-colors hover:bg-vermillion hover:border-vermillion"
-          >
-            Email us → info@draftly.ca
-          </a>
+          <EmailButton mailtoHref={mailtoHref} />
 
           <p className="mt-4 text-sm leading-relaxed text-ink-soft">
             Your ticket reference is{" "}
-            <span className="font-medium text-ink">#{ticketRef}</span> — we include it when
+            <span className="font-medium text-ink">{ticketRef}</span> — we include it when
             we reply so your request is easy to track.
           </p>
         </div>
