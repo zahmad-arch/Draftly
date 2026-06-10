@@ -86,12 +86,12 @@ export default async function StudioLayout({ children }: { children: React.React
             >
               Manage billing
             </a>
-            <a
-              href="mailto:support@draftly.ca"
+            <Link
+              href="/support"
               className="hidden text-ink-soft underline underline-offset-4 hover:text-ink sm:inline"
             >
               Support
-            </a>
+            </Link>
             <form action="/auth/signout" method="post">
               <button
                 type="submit"

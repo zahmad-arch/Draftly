@@ -241,7 +241,12 @@ export default function Home() {
             <span>in Canada</span>
             <span aria-label="Canadian flag">🍁</span>
           </p>
-          <p>© {new Date().getFullYear()} Draftly</p>
+          <p className="flex items-center gap-4">
+            <Link href="/support" className="underline underline-offset-4 hover:text-ink">
+              Support
+            </Link>
+            <span>© {new Date().getFullYear()} Draftly</span>
+          </p>
         </div>
       </footer>
     </main>

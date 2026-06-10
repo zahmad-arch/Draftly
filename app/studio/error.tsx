@@ -10,8 +10,8 @@ export default function StudioError({ reset }: { error: Error; reset: () => void
         </h1>
         <p className="mt-3 text-sm text-ink-soft">
           Something went wrong on our side. Try again, and if it keeps happening,{" "}
-          <a href="mailto:support@draftly.ca" className="underline underline-offset-4">
-            email support
+          <a href="/support" className="underline underline-offset-4">
+            visit our support page
           </a>
           .
         </p>
