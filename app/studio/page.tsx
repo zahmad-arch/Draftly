@@ -79,7 +79,7 @@ export default function Studio() {
 
       {welcome && (
         <div className="border-b border-line bg-moss px-6 py-3 text-center text-sm text-cream">
-          Welcome aboard — your trial is active. Draft your first proposal below. ✳
+          Welcome aboard. Your trial is active. Draft your first proposal below. ✳
         </div>
       )}
 
@@ -112,7 +112,7 @@ export default function Studio() {
           </label>
 
           <label className="mt-5 block">
-            <span className="eyebrow text-ink-soft">Project notes — paste anything</span>
+            <span className="eyebrow text-ink-soft">Project notes: paste anything</span>
             <textarea
               value={projectNotes}
               onChange={(e) => setProjectNotes(e.target.value)}

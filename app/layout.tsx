@@ -14,7 +14,7 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Draftly — Proposals that win the work",
+  title: "Draftly: Proposals that win the work",
   description:
     "Turn rough project notes into client-ready proposals in ninety seconds. Built for freelancers, agencies, and consultants who close.",
 };

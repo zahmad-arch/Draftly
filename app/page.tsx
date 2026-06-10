@@ -24,7 +24,7 @@ const STEPS = [
   {
     n: "02",
     title: "Draftly writes the pitch",
-    body: "Scope, deliverables, timeline, pricing, terms — drafted in your tone, framed around the client's outcome, not your task list.",
+    body: "Scope, deliverables, timeline, pricing, terms: drafted in your tone, framed around the client's outcome, not your task list.",
   },
   {
     n: "03",
@@ -77,7 +77,7 @@ export default function Home() {
               style={{ animationDelay: "0.3s" }}
             >
               Draftly turns rough call notes into a client-ready proposal in
-              ninety seconds — scoped, priced, and written in your voice.
+              ninety seconds, scoped, priced, and written in your voice.
             </p>
             <div className="rise mt-9 flex flex-wrap items-center gap-4" style={{ animationDelay: "0.45s" }}>
               <Link

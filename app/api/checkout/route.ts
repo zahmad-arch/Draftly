@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
     return NextResponse.json(
-      { error: "Payments aren't live yet — set STRIPE_SECRET_KEY to enable checkout." },
+      { error: "Payments aren't live yet. Set STRIPE_SECRET_KEY to enable checkout." },
       { status: 503 },
     );
   }

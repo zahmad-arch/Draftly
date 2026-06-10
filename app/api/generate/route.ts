@@ -16,31 +16,31 @@ function buildPrompt({ clientName, yourBusiness, projectNotes, budget, tone }: G
 
 Seller: ${yourBusiness || "an independent professional"}
 Client: ${clientName || "the client"}
-Budget signal: ${budget || "not specified — propose a sensible range"}
+Budget signal: ${budget || "not specified, propose a sensible range"}
 Tone: ${tone || "confident and warm"}
 
 Project notes from the discovery call:
 ${projectNotes || "(none provided)"}
 
-Structure the proposal with these sections: a short opening framed around the client's desired OUTCOME (never start with "I am writing to..."), Scope of Work, Deliverables, Timeline, Investment (a simple pricing table in Markdown), and Next Steps with a clear call to action. Keep it under 600 words. Be specific — turn vague notes into concrete commitments. Never invent credentials or fake testimonials.`;
+Structure the proposal with these sections: a short opening framed around the client's desired OUTCOME (never start with "I am writing to..."), Scope of Work, Deliverables, Timeline, Investment (a simple pricing table in Markdown), and Next Steps with a clear call to action. Keep it under 600 words. Be specific: turn vague notes into concrete commitments. Never invent credentials or fake testimonials.`;
 }
 
 /** Demo-mode fallback: streams a templated proposal so the product works with zero API keys. */
 function demoStream(input: GenerateRequest): Response {
   const client = input.clientName || "Acme Co.";
   const seller = input.yourBusiness || "Your Studio";
-  const text = `> **Demo mode** — set \`AI_GATEWAY_API_KEY\` to enable live AI drafting. This sample shows the output shape.
+  const text = `> **Demo mode:** set \`ANTHROPIC_API_KEY\` to enable live AI drafting. This sample shows the output shape.
 
 # Proposal for ${client}
 
-${client} needs results, not busywork — and that's exactly what this engagement is built to deliver. Below is how ${seller} will get you there.
+${client} needs results, not busywork, and that's exactly what this engagement is built to deliver. Below is how ${seller} will get you there.
 
 ## Scope of Work
 
 Based on our conversation, this engagement covers:
 
 - Discovery and audit of the current state
-- Strategy aligned to your goals${input.projectNotes ? ` — specifically: ${input.projectNotes.slice(0, 140)}` : ""}
+- Strategy aligned to your goals${input.projectNotes ? `, specifically: ${input.projectNotes.slice(0, 140)}` : ""}
 - Full execution and delivery
 - One round of refinement based on your feedback
 
@@ -70,7 +70,7 @@ Based on our conversation, this engagement covers:
 
 Reply "let's go" and you'll have the kickoff document within 24 hours. This quote is valid for 14 days.
 
-— ${seller}`;
+${seller}`;
 
   const words = text.split(" ");
   const encoder = new TextEncoder();
