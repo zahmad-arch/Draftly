@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "../empty-state";
 import { ProposalsList, type ProposalRow } from "./proposals-list";
 
-export const metadata = { title: "Proposals — Draftly" };
+export const metadata = { title: "Proposals · Draftly" };
 
 export default async function ProposalsPage() {
   const ctx = await getStudioContext();

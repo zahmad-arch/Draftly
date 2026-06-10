@@ -23,7 +23,7 @@ export async function inviteTeamMember(emailRaw: string): Promise<ActionResult> 
     return { ok: false, error: "Enter a valid email address." };
   }
   if (access.email && email === access.email.toLowerCase()) {
-    return { ok: false, error: "That's your own email — you already have a seat." };
+    return { ok: false, error: "That's your own email. You already have a seat." };
   }
 
   const supabase = await createClient();

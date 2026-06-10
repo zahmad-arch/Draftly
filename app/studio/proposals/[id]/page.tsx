@@ -52,7 +52,15 @@ export default async function ProposalDetailPage({
               : ""}
           </p>
         </div>
-        <CopyButton text={proposal.content} />
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/proposals/${proposal.id}/pdf`}
+            className="border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream"
+          >
+            Download PDF
+          </a>
+          <CopyButton text={proposal.content} />
+        </div>
       </div>
 
       <div className="relative mt-8">
@@ -61,7 +69,7 @@ export default async function ProposalDetailPage({
             <Document text={proposal.content} />
           ) : (
             <p className="text-sm text-ink-soft italic">
-              This draft has no content — generation may have been interrupted.
+              This draft has no content. Generation may have been interrupted.
             </p>
           )}
         </div>

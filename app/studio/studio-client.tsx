@@ -299,7 +299,7 @@ export function StudioClient({
             <p className="mt-5 text-xs">
               {hasVoice ? (
                 <span className="text-moss">
-                  ✳ Brand voice active{voiceName ? ` — "${voiceName}"` : ""}{" "}
+                  ✳ Brand voice active{voiceName ? `: "${voiceName}"` : ""}{" "}
                   <Link href="/studio/voice" className="underline underline-offset-4">
                     Edit
                   </Link>
@@ -356,13 +356,21 @@ export function StudioClient({
                     </button>
                   )}
                   {proposalId && (
-                    <button
-                      onClick={markSent}
-                      disabled={markedSent}
-                      className="cursor-pointer border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream disabled:border-moss disabled:text-moss disabled:hover:bg-transparent"
-                    >
-                      {markedSent ? "Sent ✓" : "Mark as sent"}
-                    </button>
+                    <>
+                      <button
+                        onClick={markSent}
+                        disabled={markedSent}
+                        className="cursor-pointer border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream disabled:border-moss disabled:text-moss disabled:hover:bg-transparent"
+                      >
+                        {markedSent ? "Sent ✓" : "Mark as sent"}
+                      </button>
+                      <a
+                        href={`/api/proposals/${proposalId}/pdf`}
+                        className="border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-cream"
+                      >
+                        Download PDF
+                      </a>
+                    </>
                   )}
                   <button
                     onClick={copy}

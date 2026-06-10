@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { GhostBars, LockedPanel } from "../locked";
 import { ClientsManager, type ClientProfileRow } from "./clients-manager";
 
-export const metadata = { title: "Clients — Draftly" };
+export const metadata = { title: "Clients · Draftly" };
 
 export default async function ClientsPage() {
   const ctx = await getStudioContext();

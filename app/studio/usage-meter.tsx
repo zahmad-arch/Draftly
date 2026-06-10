@@ -11,8 +11,8 @@ export function UsageMeter({ used, limit }: { used: number; limit: number }) {
       <div className="flex items-baseline justify-between">
         <span className="eyebrow text-ink-soft">
           {blocked
-            ? `${limit} of ${limit} — monthly limit reached`
-            : `${used} of ${limit} proposals this month${warning ? ` — ${left} left` : ""}`}
+            ? `${limit} of ${limit}: monthly limit reached`
+            : `${used} of ${limit} proposals this month${warning ? ` (${left} left)` : ""}`}
         </span>
         {(warning || blocked) && (
           <a

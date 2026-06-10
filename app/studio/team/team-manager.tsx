@@ -90,7 +90,7 @@ export function TeamManager({
               </button>
             </div>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-ink-soft">
-              No invitation email is sent — your teammate gets access the moment they sign in
+              No invitation email is sent. Your teammate gets access the moment they sign in
               to Draftly with this address.
             </p>
           </form>

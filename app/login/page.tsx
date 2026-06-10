@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AuthForm } from "./auth-form";
 
 export const metadata = {
-  title: "Sign in — Draftly",
+  title: "Sign in · Draftly",
 };
 
 export default async function LoginPage({

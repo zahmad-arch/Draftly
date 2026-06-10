@@ -6,7 +6,7 @@ import { EmptyState } from "../empty-state";
 import { GhostBars, LockedPanel } from "../locked";
 import { StatusStamp, type ProposalStatus } from "../status-stamp";
 
-export const metadata = { title: "Analytics — Draftly" };
+export const metadata = { title: "Analytics · Draftly" };
 
 interface MonthStat {
   month: string;
@@ -31,10 +31,10 @@ export default async function AnalyticsPage() {
         <LockedPanel
           feature="analytics"
           headline="Know exactly which proposals win."
-          sell="Win rate, value won, and trends over time — mark proposals won or lost and Draftly shows you what's working."
+          sell="Win rate, value won, and trends over time. Mark proposals won or lost and Draftly shows you what's working."
           ghost={
             <div className="grid max-w-lg gap-10 sm:grid-cols-3">
-              {["—%", "—", "$—"].map((s, i) => (
+              {["68%", "42", "$86k"].map((s, i) => (
                 <div key={i}>
                   <p className="font-display text-5xl font-medium text-line">{s}</p>
                   <div className="mt-3">
@@ -97,7 +97,7 @@ export default async function AnalyticsPage() {
           <div className="mt-8 grid gap-10 border border-line bg-moss p-10 text-cream md:grid-cols-3">
             <div>
               <p className="font-display text-5xl font-medium tracking-tight">
-                {winRate !== null ? `${winRate}%` : "—"}
+                {winRate !== null ? `${winRate}%` : "n/a"}
               </p>
               <p className="mt-3 leading-relaxed text-cream/75">
                 win rate across {decided} decided proposal{decided === 1 ? "" : "s"}

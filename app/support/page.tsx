@@ -5,7 +5,7 @@ import { EmailButton } from "./email-button";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Support — Draftly",
+  title: "Support · Draftly",
 };
 
 export default function SupportPage() {
@@ -35,7 +35,7 @@ export default function SupportPage() {
 
           <p className="mt-4 text-sm leading-relaxed text-ink-soft">
             Your ticket reference is{" "}
-            <span className="font-medium text-ink">{ticketRef}</span> — we include it when
+            <span className="font-medium text-ink">{ticketRef}</span>. We include it when
             we reply so your request is easy to track.
           </p>
         </div>

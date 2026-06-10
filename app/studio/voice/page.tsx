@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { GhostBars, LockedPanel } from "../locked";
 import { VoiceForm } from "./voice-form";
 
-export const metadata = { title: "Brand voice — Draftly" };
+export const metadata = { title: "Brand voice · Draftly" };
 
 export default async function VoicePage() {
   const ctx = await getStudioContext();

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { GhostBars, LockedPanel } from "../locked";
 import { TeamManager, type TeamMemberRow } from "./team-manager";
 
-export const metadata = { title: "Team — Draftly" };
+export const metadata = { title: "Team · Draftly" };
 
 export default async function TeamPage() {
   const ctx = await getStudioContext();
