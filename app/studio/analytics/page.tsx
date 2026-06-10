@@ -147,7 +147,7 @@ export default async function AnalyticsPage() {
                 ))}
               </div>
               <p className="eyebrow mt-3 text-ink-soft/70">
-                <span className="text-moss">✳</span> won · <span>sent</span>
+                <span className="text-moss">✳︎</span> won · <span>sent</span>
               </p>
             </div>
           )}

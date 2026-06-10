@@ -125,7 +125,7 @@ export default function Home() {
         <div className="marquee-track flex w-max gap-10 whitespace-nowrap">
           {[...INDUSTRIES, ...INDUSTRIES].map((label, i) => (
             <span key={i} className="flex items-center gap-10 text-sm tracking-[0.18em] text-cream/70 uppercase">
-              {label} <span className="text-vermillion">✳</span>
+              {label} <span className="text-vermillion">✳︎</span>
             </span>
           ))}
         </div>
@@ -199,7 +199,7 @@ export default function Home() {
                 <ul className={`mt-7 flex-1 space-y-3 text-sm ${plan.highlighted ? "text-cream/85" : "text-ink-soft"}`}>
                   {plan.features.map((f) => (
                     <li key={f} className="flex gap-2.5">
-                      <span className="text-vermillion">✳</span> {f}
+                      <span className="text-vermillion">✳︎</span> {f}
                     </li>
                   ))}
                 </ul>

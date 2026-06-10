@@ -179,7 +179,7 @@ export function StudioClient({
     <>
       {welcome && (
         <div className="border-b border-line bg-moss px-6 py-3 text-center text-sm text-cream">
-          Welcome aboard. Your trial is active. Draft your first proposal below. ✳
+          Welcome aboard. Your trial is active. Draft your first proposal below. ✳︎
         </div>
       )}
 
@@ -216,7 +216,7 @@ export function StudioClient({
                   className="text-xs text-ink-soft/60 hover:text-ink-soft"
                   title="Included in Studio"
                 >
-                  Saved clients · Studio <span className="text-vermillion">✳</span>
+                  Saved clients · Studio <span className="text-vermillion">✳︎</span>
                 </a>
               )}
             </span>
@@ -299,7 +299,7 @@ export function StudioClient({
             <p className="mt-5 text-xs">
               {hasVoice ? (
                 <span className="text-moss">
-                  ✳ Brand voice active{voiceName ? `: "${voiceName}"` : ""}{" "}
+                  ✳︎ Brand voice active{voiceName ? `: "${voiceName}"` : ""}{" "}
                   <Link href="/studio/voice" className="underline underline-offset-4">
                     Edit
                   </Link>

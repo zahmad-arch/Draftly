@@ -187,7 +187,7 @@ export function ClientsManager({ profiles }: { profiles: ClientProfileRow[] }) {
       {profiles.length === 0 && !panelOpen ? (
         <div className="mt-8 border border-line bg-cream">
           <EmptyState
-            glyph="✳"
+            glyph="✳︎"
             message="No saved clients yet. Draft a proposal and choose 'Save as client profile', or create one here."
           />
         </div>

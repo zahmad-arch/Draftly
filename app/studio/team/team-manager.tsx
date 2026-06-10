@@ -125,7 +125,7 @@ export function TeamManager({
                 </span>
               ) : (
                 <span className="border border-dashed border-line px-2 py-0.5 text-xs text-ink-soft">
-                  awaiting sign-in <span className="text-vermillion">✳</span>
+                  awaiting sign-in <span className="text-vermillion">✳︎</span>
                 </span>
               )}
               {(isOwner || isSelf) && (

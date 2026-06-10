@@ -41,7 +41,7 @@ export function VoiceForm({
       )}
       {saved && (
         <p className="mb-4 border-l-2 border-moss bg-cream py-2 pl-3 text-sm text-moss">
-          Voice saved. Every new draft will use it. ✳
+          Voice saved. Every new draft will use it. ✳︎
         </p>
       )}
       {error && <p className="mb-4 text-sm text-vermillion-deep">{error}</p>}

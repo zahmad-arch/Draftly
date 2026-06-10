@@ -34,7 +34,7 @@ export function StudioNav({ items }: { items: NavItem[] }) {
             }
           >
             {item.label}
-            {item.locked && <span className="ml-1 text-vermillion">✳</span>}
+            {item.locked && <span className="ml-1 text-vermillion">✳︎</span>}
           </Link>
         );
       })}

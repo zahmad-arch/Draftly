@@ -75,7 +75,7 @@ export default async function VoicePage() {
           </div>
           <p className="mt-6 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
             Applied to every proposal your team drafts. The generator shows{" "}
-            <span className="text-moss">✳ Brand voice active</span> when it&apos;s on.
+            <span className="text-moss">✳︎ Brand voice active</span> when it&apos;s on.
           </p>
         </div>
       </div>

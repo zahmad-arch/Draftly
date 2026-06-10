@@ -31,7 +31,7 @@ export function Document({ text, streaming = false }: { text: string; streaming?
           case "bullet":
             return (
               <p key={i} className="flex gap-2 text-[0.95rem] leading-relaxed">
-                <span className="text-vermillion">✳</span>
+                <span className="text-vermillion">✳︎</span>
                 <span>
                   {inlineText(block.inlines)} {caret}
                 </span>
